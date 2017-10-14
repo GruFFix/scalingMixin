@@ -2,6 +2,15 @@
 
 Allows you to scale the interface.
 
+### Install:
+
+```
+npm i sass-scaling-mixin
+```
+```
+@import "~sass-scaling-mixin";
+```
+
 ### Use:
 ```
 .my-class {
