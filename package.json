@@ -1,0 +1,27 @@
+{
+  "name": "sass-scaling-mixin",
+  "version": "1.0.0",
+  "author": "Kirill Lomanov <gruffix@yandex.ru> (https://github.com/GruFFix)",
+  "description": "Allows you to scale the interface",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/askucher/compass-sass-mixins"
+  },
+  "main": "lib/*",
+  "keywords": [
+    "mixins",
+    "sass",
+    "css3"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "bugs": {
+    "url": "https://github.com/GruFFix/scalingMixin/issues"
+  },
+  "homepage": "https://github.com/GruFFix/scalingMixin"
+}

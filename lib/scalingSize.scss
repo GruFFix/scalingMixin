@@ -1,0 +1,109 @@
+// scaling params
+$scalingConfig: (
+  minSize: 767,
+  maxSize: 1366,
+  scalingType: 1vw,
+  setOriginSizeByMobile: true,
+  setMediaByBreakPoints: false,
+  fixedMaxWidth: true,
+) !default;
+
+//break points for calc ratio
+$scalingBreakPoints: (pointSize-1: 1280, pointSize-2: 1024) !default;
+
+// get variables from config
+$SCALING-TYPE:                map-get($scalingConfig, scalingType);
+$IS-FIXED-WIDTH:              map-get($scalingConfig, fixedMaxWidth);
+$IS-ORIGINAL-SIZE-BY-MOBILE:  map-get($scalingConfig, setOriginSizeByMobile);
+$IS-SET-MEDIA-BY-BREAKPOINTS: map-get($scalingConfig, setMediaByBreakPoints);
+$MIN-SCREEN-SIZE:             map-get($scalingConfig, maxSize);
+$MAX-SCREEN-SIZE:             map-get($scalingConfig, minSize);
+
+@function checkScalingType() {
+  @if ($SCALING-TYPE == 1vw) {
+    @return 'width';
+  } @else {
+    @return 'height';
+  }
+}
+
+$scalingMediaType: checkScalingType();
+
+$MEDIA-MIN-SIZE: "(max-#{$scalingMediaType}: #{$MAX-SCREEN-SIZE}px)";
+$MEDIA-MAX-SIZE: "(min-#{$scalingMediaType}: #{$MIN-SCREEN-SIZE}px)";
+
+@function get-vw($object, $type: 1vw, $size: $MIN-SCREEN-SIZE) {
+  $ratio: $size / $MIN-SCREEN-SIZE;
+  $vw: ($MIN-SCREEN-SIZE * 0.01) * 1px;
+
+  @if ($object == 'auto' or $object == null) {
+    @return $object;
+  } @else {
+    @return (($object * $ratio) / $vw) * $type;
+  }
+}
+
+@function get-px($object) {
+  @if ($object == 'auto' or $object == null) {
+    @return $object;
+  } @else {
+    @return get-vw($object, 1px) * $MAX-SCREEN-SIZE;
+  }
+}
+
+@mixin propertySetScalingType($size, $property, $size1, $size2: null, $size3: null, $size4: null) {
+  #{$property}: get-vw($size1, $SCALING-TYPE, $size)
+  get-vw($size2, $SCALING-TYPE, $size) get-vw($size3, $SCALING-TYPE, $size)
+  get-vw($size4, $SCALING-TYPE, $size);
+}
+
+@mixin propertySetPx($property, $size1, $size2: null, $size3: null, $size4: null) {
+  #{$property}: get-px($size1) get-px($size2) get-px($size3) get-px($size4);
+}
+
+@mixin mediaForBreakPoints($properties) {
+  @each $property, $screenSize in $scalingBreakPoints {
+    @media (max-width: #{$screenSize}px) {
+      @each $property, $values in $properties {
+        @include propertySetScalingType($screenSize, $property, $values...);
+      }
+    }
+  }
+}
+
+@mixin scalingSize($properties) {
+  @each $name, $value in $properties {
+    @include propertySetScalingType($MIN-SCREEN-SIZE, $name, $value...);
+  }
+
+  // include media query by break points
+  @if ($IS-SET-MEDIA-BY-BREAKPOINTS) {
+    @include mediaForBreakPoints($properties);
+  }
+
+  // if width <= minScreenWidth stop scaling
+  @media #{$MEDIA-MIN-SIZE} {
+    @each $name, $value in $properties {
+      @if ($IS-ORIGINAL-SIZE-BY-MOBILE == true) {
+        #{$name}: $value;
+      } @else {
+        @include propertySetPx($name, $value...);
+      }
+    }
+  }
+
+  // if width >= maxScreenWidth set default value (px)
+  @if ($IS-FIXED-WIDTH) {
+    @media #{$MEDIA-MAX-SIZE} {
+      @each $name, $value in $properties {
+        #{$name}: $value;
+      }
+    }
+  }
+}
+
+@mixin mobileStyles {
+  @media #{$MEDIA-MIN-SIZE} {
+    @content;
+  }
+}
